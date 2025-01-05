@@ -13,7 +13,6 @@ function drawnBackground(background, context, sprites) {
         }
     });
 }
-
 /**
  * Creates a background layer for drawing the background tiles.
  * @param {Array} backgrounds - The array of background objects containing tile ranges.
@@ -31,5 +30,11 @@ export function createBackgroundLayer(backgrounds, sprites) {
     
     return function drawBackgroundLayer(context) {
         context.drawImage(buffer, 0, 0);
+    };
+}
+
+export function createSpriteLayer(entity) {
+    return function drawSpriteLayer(context) {
+        entity.draw(context);
     };
 }
