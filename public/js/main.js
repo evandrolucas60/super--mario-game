@@ -1,37 +1,51 @@
-import SpriteSheet from './SpriteSheet.js';
-import {loadImage, loadLevel} from './loaders.js';
+import { loadLevel } from './loaders.js';
+import { createBackgroundLayer } from './layers.js';
+import { loadMarioSprites, loadBackgroundSprites } from './sprites.js';
+import Compositor from './Compositor.js';
 
-function drawnBackground(background, context, sprites) {
-    background.ranges.forEach(([x1, x2, y1, y2]) => {
-        for (let x = x1; x < x2; ++x) {
-            for (let y = y1; y < y2; ++y) {
-                sprites.drawTile(background.tile, context, x, y);
-            }
+// Get the canvas element and its 2D rendering context
+const canvas = document.getElementById('screen');
+const context = canvas.getContext('2d');
+
+/**
+ * Creates a sprite layer for drawing a sprite at a given position.
+ * @param {SpriteSheet} sprite - The SpriteSheet instance containing the sprite to draw.
+ * @param {Object} pos - The position object with x and y coordinates.
+ * @returns {Function} A function that draws the sprite layer.
+ */
+function createSpriteLayer(sprite, pos) {
+    return function drawSpriteLayer(context) {
+        for (let i = 0; i < 20; ++i) {
+            sprite.draw('idle', context, pos.x + i * 16, pos.y);    
         }
-    });
+    };
 }
 
-  // Get the canvas element and its 2D rendering context
-  const canvas = document.getElementById('screen');
-  const context = canvas.getContext('2d');
-  
-  // Draw a filled rectangle on the canvas
-  context.fillRect(0, 0, 50, 50);
-  
-  // Load the sprite sheet image
-  loadImage('/img/tiles.png').then(image => {
-    // Create a new SpriteSheet instance with the loaded image
-    const sprites = new SpriteSheet(image, 16 , 16);
-    // Define a sprite named 'ground' at position (0, 1) in the sprite sheet
-    sprites.define('ground', 0, 0);
-    sprites.define('sky', 3, 23);
-    
-    // Load the level data for level '1-1'
-    loadLevel('1-1')
-    .then(level => { 
-        // Draw the first background layer of the level// Draw the first background layer of the level
-        drawnBackground(level.backgrounds[0], context, sprites);
-        // Draw the second background layer of the level// Draw the second background layer of the level
-        drawnBackground(level.backgrounds[1], context, sprites);   
-    }) 
-  });
+// Load the background sprites and the level data
+Promise.all([
+    loadMarioSprites(), // Load Mario sprites
+    loadBackgroundSprites(),// Load background sprites// Load background sprites
+    loadLevel('1-1')// Load level data for level '1-1'
+]).then(([marioSprites,backgroundSprites, level]) => {
+    const comp = new Compositor(); // Create a new Compositor instance
+    const backgroundLayer = createBackgroundLayer(level.backgrounds, backgroundSprites);// Create a background layer
+    comp.layers.push(backgroundLayer);// Add the background layer to the compositor
+
+    const pos = {
+        x: 0,// Initial x-coordinate of Mario
+        y: 0// Initial y-coordinate of Mario
+    };
+
+    const spriteLayer = createSpriteLayer(marioSprites, pos);// Create a sprite layer for Mario
+    comp.layers.push(spriteLayer);// Add the sprite layer to the compositor
+
+    // Draw the mario sprite
+    function update() {
+        comp.draw(context);// Draw all layers in the compositor
+        marioSprites.draw('idle', context, pos.x, pos.y);// Draw the 'idle' sprite at coordinates (64, 64)
+        pos.x += 2;// Move the sprite 2 pixels to the right
+        pos.y += 2;// Move the sprite 2 pixels down
+        requestAnimationFrame(update);// Schedule the next frame update
+    }
+    update();
+});

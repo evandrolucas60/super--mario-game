@@ -20,23 +20,27 @@ export default class SpriteSheet {
      * @param {number} x - The x-coordinate (in sprites) of the sprite within the sprite sheet.
      * @param {number} y - The y-coordinate (in sprites) of the sprite within the sprite sheet.
      */
-    define(name, x, y) {
+    define(name, x, y, width, height) {
         const buffer = document.createElement('canvas');
-        buffer.width = this.width;
-        buffer.height = this.height;
+        buffer.width = width;
+        buffer.height = height;
         buffer
             .getContext('2d')
             .drawImage(
                 this.image,
-                x * this.width,
-                y * this.height,
-                this.width,
-                this.height,
+                x ,
+                y ,
+                width,
+                height,
                 0,
                 0,
-                this.width,
-                this.height);
+                width,
+                height);
         this.tiles.set(name, buffer);
+    }
+
+    defineTile(name, x, y) {
+        this.define(name, x * this.width, y * this.height, this.width, this.height);
     }
 
     /**
