@@ -1,11 +1,12 @@
+// Classe Compositor para gerenciar e desenhar camadas
 export default class Compositor {
     constructor() {
-        this.layers = []; // Array to store the layers to be drawn
+        this.layers = []; // Array para armazenar as camadas a serem desenhadasdrawn
     }
-
+    // Método para desenhar todas as camadas
     draw(context) {
         this.layers.forEach(layer => {
-            layer(context); // Call the draw function of each layer
+            layer(context); // Chama a função de desenho de cada camada
         });
     }
 }
